@@ -21,3 +21,5 @@ pub use crate::ir::types::DataSegmentKind;
 pub use crate::ir::types::DataType;
 pub use crate::ir::types::Instructions;
 pub use crate::ir::types::Location;
+
+pub use wasmparser;
