@@ -61,6 +61,11 @@ impl Memories {
         self.memories.is_empty()
     }
 
+    /// Create an iterable over the memory section
+    pub fn iter(&self) -> std::slice::Iter<'_, Memory> {
+        self.memories.iter()
+    }
+
     // =================
     // ==== GETTERS ====
     // =================
