@@ -99,9 +99,9 @@ impl ModuleExports {
     }
 
     /// Get the function ID of an exported function
-    pub fn get_func_by_name(&self, name: String) -> Option<FunctionID> {
+    pub fn get_func_by_name(&self, name: &str) -> Option<FunctionID> {
         for exp in self.exports.iter() {
-            if matches!(exp.kind, ExternalKind::Func) && exp.name == name {
+            if matches!(exp.kind, ExternalKind::Func) && exp.name.as_str() == name {
                 return Some(FunctionID(exp.index));
             }
         }
