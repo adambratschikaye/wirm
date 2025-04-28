@@ -17,6 +17,15 @@ pub enum GlobalKind {
     Import(ImportedGlobal),
 }
 
+impl GlobalKind {
+    pub fn ty(&self) -> &GlobalType {
+        match self {
+            GlobalKind::Local(local_global) => &local_global.ty,
+            GlobalKind::Import(imported_global) => &imported_global.ty,
+        }
+    }
+}
+
 /// Represents a global that is locally defined in the module.
 #[derive(Clone, Debug)]
 pub struct LocalGlobal {
@@ -50,6 +59,12 @@ pub struct Global {
     pub(crate) kind: GlobalKind,
     /// Whether this global was deleted.
     pub(crate) deleted: bool,
+}
+
+impl Global {
+    pub fn kind(&self) -> &GlobalKind {
+        &self.kind
+    }
 }
 
 impl GetID for Global {
