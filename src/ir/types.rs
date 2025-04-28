@@ -1222,6 +1222,10 @@ impl InitExpr {
         }
     }
 
+    pub fn instructions(&self) -> &[Instructions] {
+        &self.exprs
+    }
+
     pub(crate) fn eval(init: &ConstExpr) -> InitExpr {
         use wasmparser::Operator::*;
         let mut reader = init.get_operators_reader();
