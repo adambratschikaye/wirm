@@ -253,6 +253,10 @@ impl<'a> Functions<'a> {
     pub fn iter(&self) -> impl Iterator<Item = &Function<'a>> {
         Iter::<Function<'a>>::iter(self)
     }
+
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, Function<'a>> {
+        self.functions.iter_mut()
+    }
 }
 
 impl<'a> Iter<Function<'a>> for Functions<'a> {
