@@ -1226,6 +1226,10 @@ impl InitExpr {
         &self.exprs
     }
 
+    pub fn instructions_mut(&mut self) -> &mut Vec<Instructions> {
+        &mut self.exprs
+    }
+
     pub(crate) fn eval(init: &ConstExpr) -> InitExpr {
         use wasmparser::Operator::*;
         let mut reader = init.get_operators_reader();
