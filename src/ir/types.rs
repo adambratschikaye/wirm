@@ -1563,6 +1563,10 @@ impl<'a> CustomSections<'a> {
     pub fn iter(&self) -> Iter<'_, CustomSection<'a>> {
         self.custom_sections.iter()
     }
+
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, CustomSection<'a>> {
+        self.custom_sections.iter_mut()
+    }
 }
 
 /// Intermediate Representation of a single Custom Section
