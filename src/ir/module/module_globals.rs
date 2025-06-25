@@ -65,6 +65,10 @@ impl Global {
     pub fn kind(&self) -> &GlobalKind {
         &self.kind
     }
+
+    pub fn kind_mut(&mut self) -> &mut GlobalKind {
+        &mut self.kind
+    }
 }
 
 impl GetID for Global {
