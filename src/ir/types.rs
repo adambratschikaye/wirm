@@ -1569,17 +1569,40 @@ impl<'a> CustomSections<'a> {
     }
 }
 
+#[derive(Clone, Debug)]
+enum CustomSectionData<'a> {
+    Borrowed(&'a [u8]),
+    Owned(Vec<u8>),
+}
+
 /// Intermediate Representation of a single Custom Section
 #[derive(Clone, Debug)]
 pub struct CustomSection<'a> {
     pub name: &'a str,
-    pub data: &'a [u8],
+    data: CustomSectionData<'a>,
 }
 
 impl<'a> CustomSection<'a> {
     /// Create a new custom section
     pub fn new(name: &'a str, data: &'a [u8]) -> Self {
-        CustomSection { name, data }
+        CustomSection {
+            name,
+            data: CustomSectionData::Borrowed(data),
+        }
+    }
+
+    pub fn new_owned(name: &'a str, data: Vec<u8>) -> Self {
+        CustomSection {
+            name,
+            data: CustomSectionData::Owned(data),
+        }
+    }
+
+    pub fn data(&self) -> &[u8] {
+        match &self.data {
+            CustomSectionData::Borrowed(items) => items,
+            CustomSectionData::Owned(items) => items,
+        }
     }
 }
 
