@@ -43,6 +43,10 @@ impl ModuleExports {
         self.exports.iter()
     }
 
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, Export> {
+        self.exports.iter_mut()
+    }
+
     /// Checks if there are no exports
     pub fn is_empty(&self) -> bool {
         self.exports.is_empty()
