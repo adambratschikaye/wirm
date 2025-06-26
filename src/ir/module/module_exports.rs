@@ -63,6 +63,15 @@ impl ModuleExports {
         self.exports.push(export);
     }
 
+    pub fn add_export(&mut self, name: String, id: u32, kind: ExternalKind) {
+        self.exports.push(Export {
+            name,
+            kind,
+            index: id,
+            deleted: false,
+        })
+    }
+
     /// Get export by name and return if present
     pub fn get_by_name(&self, name: String) -> Option<Export> {
         for exp in self.exports.iter() {
