@@ -66,6 +66,10 @@ impl Memories {
         self.memories.iter()
     }
 
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, Memory> {
+        self.memories.iter_mut()
+    }
+
     // =================
     // ==== GETTERS ====
     // =================
