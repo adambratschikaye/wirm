@@ -419,7 +419,7 @@ impl<'a> Functions<'a> {
         FunctionID(self.functions.len() as u32)
     }
 
-    pub(crate) fn add_local_func(
+    pub fn add_local_func(
         &mut self,
         mut local_function: LocalFunction<'a>,
         name: Option<String>,
