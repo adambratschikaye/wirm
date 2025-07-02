@@ -244,7 +244,7 @@ impl ModuleGlobals {
     }
 
     /// Add a new Global to the module. Returns the index of the new Global.
-    pub(crate) fn add(&mut self, mut global: Global) -> GlobalID {
+    pub fn add(&mut self, mut global: Global) -> GlobalID {
         let id = GlobalID(self.globals.len() as u32);
         global.set_id(id);
         self.globals.push(global);
