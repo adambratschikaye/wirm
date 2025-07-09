@@ -1103,7 +1103,6 @@ impl<'a> Module<'a> {
     pub(crate) fn encode_internal(&mut self) -> wasm_encoder::Module {
         // First resolve any instrumentation that needs to be translated to before/after/alt
         self.resolve_special_instrumentation();
-        self.functions.recalculate_ids = false;
 
         let func_mapping = if self.functions.recalculate_ids {
             Self::recalculate_ids(
