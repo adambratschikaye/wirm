@@ -88,6 +88,30 @@ impl ModuleExports {
         self.exports.push(export)
     }
 
+    /// Add an exported table
+    pub fn add_export_table(&mut self, name: String, exp_id: u32, tag: InjectTag) {
+        let export = Export {
+            name,
+            kind: ExternalKind::Table,
+            index: exp_id,
+            deleted: false,
+            tag,
+        };
+        self.exports.push(export)
+    }
+
+    /// Add an exported global
+    pub fn add_export_global(&mut self, name: String, exp_id: u32, tag: InjectTag) {
+        let export = Export {
+            name,
+            kind: ExternalKind::Global,
+            index: exp_id,
+            deleted: false,
+            tag,
+        };
+        self.exports.push(export)
+    }
+
     /// Get export by name and return if present
     pub fn get_by_name(&self, name: String) -> Option<Export> {
         for exp in self.exports.iter() {
