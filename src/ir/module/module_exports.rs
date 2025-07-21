@@ -51,8 +51,18 @@ impl ModuleExports {
         ModuleExports { exports }
     }
 
+    /// Iterate over all the exports in the module.
+    ///     
+    /// Note that exports may have been deleted.
     pub fn iter(&self) -> std::slice::Iter<'_, Export> {
         self.exports.iter()
+    }
+
+    /// Iterate over the exports in the module.
+    ///     
+    /// Note that exports may have been deleted.
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, Export> {
+        self.exports.iter_mut()
     }
 
     /// Checks if there are no exports
