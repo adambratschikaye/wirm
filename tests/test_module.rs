@@ -626,7 +626,7 @@ fn test_elem_reindexing() {
 
     // Add an import of a different type. Then the table will have entries of
     // the wrong type unless the element section is reindexed.
-    let ty_id = module.types.add_func_type(&[DataType::I32], &[], None);
+    let ty_id = module.types.add_func_type(&[DataType::I32], &[]);
     let _ = module.add_import_func("".to_string(), "".to_string(), ty_id);
     validate(&module.encode(), &output_path).unwrap();
 
