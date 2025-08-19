@@ -124,6 +124,53 @@ impl<'a> Module<'a> {
         Module::parse_internal(wasm, enable_multi_memory, parser)
     }
 
+    fn parse_body(
+        body: wasmparser::FunctionBody,
+        enable_multi_memory: bool,
+    ) -> Result<Body, Error> {
+        let locals_reader = body.get_locals_reader()?;
+        let locals = locals_reader.into_iter().collect::<Result<Vec<_>, _>>()?;
+        let mut num_locals = 0;
+        let locals: Vec<(u32, DataType)> = locals
+            .iter()
+            .map(|(count, val_type)| {
+                num_locals += count;
+                (*count, DataType::from(*val_type))
+            })
+            .collect();
+
+        let instructions = body
+            .get_operators_reader()?
+            .into_iter()
+            .collect::<Result<Vec<_>, _>>()?;
+        if let Some(last) = instructions.last() {
+            if let Operator::End = last {
+            } else {
+                return Err(Error::MissingFunctionEnd {
+                    func_range: body.range(),
+                });
+            }
+        }
+        if !enable_multi_memory
+            && instructions.iter().any(|i| match i {
+                Operator::MemoryGrow { mem, .. } | Operator::MemorySize { mem, .. } => *mem != 0x00,
+                _ => false,
+            })
+        {
+            return Err(Error::InvalidMemoryReservedByte {
+                func_range: body.range(),
+            });
+        }
+        let instructions: Vec<_> = instructions.into_iter().map(Instruction::new).collect();
+        Ok(Body {
+            locals,
+            num_locals,
+            num_instructions: instructions.len(),
+            instructions,
+            name: None,
+        })
+    }
+
     pub(crate) fn parse_internal(
         wasm: &'a [u8],
         enable_multi_memory: bool,
@@ -318,50 +365,8 @@ impl<'a> Module<'a> {
                     code_section_count = count as usize;
                 }
                 Payload::CodeSectionEntry(body) => {
-                    let locals_reader = body.get_locals_reader()?;
-                    let locals = locals_reader.into_iter().collect::<Result<Vec<_>, _>>()?;
-                    let mut num_locals = 0;
-                    let locals: Vec<(u32, DataType)> = locals
-                        .iter()
-                        .map(|(count, val_type)| {
-                            num_locals += count;
-                            (*count, DataType::from(*val_type))
-                        })
-                        .collect();
-
-                    let instructions = body
-                        .get_operators_reader()?
-                        .into_iter()
-                        .collect::<Result<Vec<_>, _>>()?;
-                    if let Some(last) = instructions.last() {
-                        if let Operator::End = last {
-                        } else {
-                            return Err(Error::MissingFunctionEnd {
-                                func_range: body.range(),
-                            });
-                        }
-                    }
-                    if !enable_multi_memory
-                        && instructions.iter().any(|i| match i {
-                            Operator::MemoryGrow { mem, .. } | Operator::MemorySize { mem, .. } => {
-                                *mem != 0x00
-                            }
-                            _ => false,
-                        })
-                    {
-                        return Err(Error::InvalidMemoryReservedByte {
-                            func_range: body.range(),
-                        });
-                    }
-                    let instructions: Vec<_> =
-                        instructions.into_iter().map(Instruction::new).collect();
-                    code_sections.push(Body {
-                        locals,
-                        num_locals,
-                        num_instructions: instructions.len(),
-                        instructions,
-                        name: None,
-                    });
+                    let body = Self::parse_body(body, enable_multi_memory)?;
+                    code_sections.push(body);
                 }
                 Payload::TagSection(tag_section_reader) => {
                     for tag in tag_section_reader.into_iter() {
