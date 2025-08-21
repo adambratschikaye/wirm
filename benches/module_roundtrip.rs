@@ -13,7 +13,7 @@ fn roundtrip_wirm(c: &mut Criterion) {
             let mut module =
                 wirm::Module::parse(black_box(&wasm_bytes), false).expect("Failed to parse module");
 
-            println!("wirm parse: {:?}", instant.elapsed());
+            // println!("wirm parse: {:?}", instant.elapsed());
             // let import_id = module
             //     .imports
             //     .find("ic0".to_string(), "time".to_string())
@@ -47,7 +47,7 @@ fn roundtrip_transform(c: &mut Criterion) {
             // Parse the module
             let module = wirm::wasm_transform::Module::parse(black_box(&wasm_bytes), false)
                 .expect("Failed to parse module");
-            println!("transform parse: {:?}", instant.elapsed());
+            // println!("transform parse: {:?}", instant.elapsed());
 
             // let import_id = module
             //     .imports
@@ -72,9 +72,18 @@ fn roundtrip_transform(c: &mut Criterion) {
     });
 }
 
+fn new_flag(c: &mut Criterion) {
+    c.bench_function("new_flag", |b| {
+        b.iter(|| {
+            let flag = wirm::ir::types::InstrumentationFlag::default();
+            black_box(flag)
+        });
+    });
+}
+
 criterion_group! {
     name = benches;
     config = Criterion::default().sample_size(10);
-    targets = roundtrip_wirm, roundtrip_transform
+    targets = roundtrip_wirm, roundtrip_transform, new_flag
 }
 criterion_main!(benches);

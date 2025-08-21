@@ -10,6 +10,7 @@ pub mod iterator;
 pub mod module_builder;
 pub mod opcode;
 pub mod subiterator;
+pub mod wasm_transform;
 
 pub use crate::opcode::Opcode;
 
