@@ -1,10 +1,29 @@
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use std::fs;
 use std::hint::black_box;
 
 fn basic(c: &mut Criterion) {
     // Read the user.wasm file
     let wasm_bytes = fs::read("user.wasm").expect("Failed to read user.wasm");
+
+    c.bench_function("encode_wirm", |b| {
+        b.iter_batched(
+            || wirm::Module::parse(&wasm_bytes, false).expect("Failed to parse module"),
+            |mut m| black_box(m.encode()),
+            BatchSize::SmallInput,
+        );
+    });
+
+    c.bench_function("encode_transform", |b| {
+        b.iter_batched(
+            || {
+                wirm::wasm_transform::Module::parse(&wasm_bytes, false)
+                    .expect("Failed to parse module")
+            },
+            |m| black_box(m.encode().unwrap()),
+            BatchSize::SmallInput,
+        );
+    });
 
     c.bench_function("roundtrip_wirm", |b| {
         b.iter(|| {
