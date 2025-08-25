@@ -2,13 +2,13 @@ use criterion::{criterion_group, criterion_main, Criterion};
 use std::fs;
 use std::hint::black_box;
 
-fn roundtrip_wirm(c: &mut Criterion) {
+fn basic(c: &mut Criterion) {
     // Read the user.wasm file
     let wasm_bytes = fs::read("user.wasm").expect("Failed to read user.wasm");
 
     c.bench_function("roundtrip_wirm", |b| {
         b.iter(|| {
-            let instant = std::time::Instant::now();
+            let _instant = std::time::Instant::now();
             // Parse the module
             let mut module =
                 wirm::Module::parse(black_box(&wasm_bytes), false).expect("Failed to parse module");
@@ -35,15 +35,10 @@ fn roundtrip_wirm(c: &mut Criterion) {
             black_box(emitted_bytes)
         });
     });
-}
-
-fn roundtrip_transform(c: &mut Criterion) {
-    // Read the user.wasm file
-    let wasm_bytes = fs::read("user.wasm").expect("Failed to read user.wasm");
 
     c.bench_function("roundtrip_transform", |b| {
         b.iter(|| {
-            let instant = std::time::Instant::now();
+            let _instant = std::time::Instant::now();
             // Parse the module
             let module = wirm::wasm_transform::Module::parse(black_box(&wasm_bytes), false)
                 .expect("Failed to parse module");
@@ -70,13 +65,24 @@ fn roundtrip_transform(c: &mut Criterion) {
             black_box(emitted_bytes)
         });
     });
-}
 
-fn new_flag(c: &mut Criterion) {
-    c.bench_function("new_flag", |b| {
-        b.iter(|| {
-            let flag = wirm::ir::types::InstrumentationFlag::default();
-            black_box(flag)
+    c.bench_function("parse_wirm", |b| {
+        b.iter_with_large_drop(|| {
+            // Parse the module
+            let module =
+                wirm::Module::parse(black_box(&wasm_bytes), false).expect("Failed to parse module");
+            // println!("transform parse: {:?}", instant.elapsed());
+            black_box(module)
+        });
+    });
+
+    c.bench_function("parse_transform", |b| {
+        b.iter_with_large_drop(|| {
+            // Parse the module
+            let module = wirm::wasm_transform::Module::parse(black_box(&wasm_bytes), false)
+                .expect("Failed to parse module");
+            // println!("transform parse: {:?}", instant.elapsed());
+            black_box(module)
         });
     });
 }
@@ -84,6 +90,6 @@ fn new_flag(c: &mut Criterion) {
 criterion_group! {
     name = benches;
     config = Criterion::default().sample_size(10);
-    targets = roundtrip_wirm, roundtrip_transform, new_flag
+    targets = basic,
 }
 criterion_main!(benches);
