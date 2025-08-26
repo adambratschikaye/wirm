@@ -190,6 +190,9 @@ impl<'a> Module<'a> {
         enable_multi_memory: bool,
         parser: Parser,
     ) -> Result<Self, Error> {
+        #[cfg(feature = "parallel")]
+        use rayon::prelude::*;
+
         let mut imports: ModuleImports = ModuleImports::default();
         let mut types: HashMap<TypeID, Types> = HashMap::new();
         let mut recgroups = vec![];
@@ -199,7 +202,6 @@ impl<'a> Module<'a> {
         let mut functions = vec![];
         let mut elements = vec![];
         let mut code_section_count = 0;
-        let mut code_sections = vec![];
         let mut globals = vec![];
         let mut exports = vec![];
         let mut start = None;
@@ -219,6 +221,7 @@ impl<'a> Module<'a> {
         let mut data_names = wasm_encoder::NameMap::new();
         let mut field_names = wasm_encoder::IndirectNameMap::new();
         let mut tag_names = wasm_encoder::NameMap::new();
+        let mut bodies_and_names = vec![];
 
         for payload in parser.parse_all(wasm) {
             let payload = payload?;
@@ -379,8 +382,7 @@ impl<'a> Module<'a> {
                     code_section_count = count as usize;
                 }
                 Payload::CodeSectionEntry(body) => {
-                    let body = Self::parse_body(body, enable_multi_memory)?;
-                    code_sections.push(body);
+                    bodies_and_names.push((body, None));
                 }
                 Payload::TagSection(tag_section_reader) => {
                     for tag in tag_section_reader.into_iter() {
@@ -416,7 +418,7 @@ impl<'a> Module<'a> {
                                             } else {
                                                 let rel_idx = abs_idx - imports.num_funcs;
                                                 // assert!(0 < rel_idx && rel_idx < code_sections.len() as u32);
-                                                code_sections[rel_idx as usize].name =
+                                                bodies_and_names[rel_idx as usize].1 =
                                                     Some(naming.name.to_string());
                                             }
                                         }
@@ -513,6 +515,31 @@ impl<'a> Module<'a> {
                 _ => todo!(),
             }
         }
+
+        #[cfg(feature = "parallel")]
+        let code_sections = bodies_and_names
+            .into_par_iter()
+            .map(|(body, name)| {
+                let mut body = Self::parse_body(body, enable_multi_memory)?;
+                if let Some(name) = name {
+                    body.name = Some(name);
+                }
+                Ok::<_, Error>(body)
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        #[cfg(not(feature = "parallel"))]
+        let code_sections = bodies_and_names
+            .into_iter()
+            .map(|(body, name)| {
+                let mut body = Self::parse_body(body, enable_multi_memory)?;
+                if let Some(name) = name {
+                    body.name = Some(name);
+                }
+                Ok::<_, Error>(body)
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
         if code_section_count != code_sections.len() || code_section_count != functions.len() {
             return Err(Error::IncorrectCodeCounts {
                 function_section_count: functions.len(),
